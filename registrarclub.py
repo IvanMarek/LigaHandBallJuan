@@ -123,7 +123,7 @@ class ClubesABM:
         
         try:
             with self.conn:
-                self.cursor.execute("INSERT INTO clubes (nombre,genero_id, localidad_id, logo) VALUES (%s, %s, %s, %s)", (nombre,genero,localidad, foto))
+                self.cursor.execute("INSERT INTO clubes (nombre,genero_id, localidad_id, logo) VALUES (%s, %s, %s, %s)", (nombre,genero_id,localidad_id, foto))
                 tk.messagebox.showinfo("Éxito", "Club registrado exitosamente.")
                 self.entry_nombre.delete(0, tk.END)  # Limpiar campo de nombre
                 self.entry_foto.config(state="normal")
@@ -131,7 +131,7 @@ class ClubesABM:
                 self.entry_foto.config(state="disabled")
                 self.label_imagen.config(image='')  # Limpiar imagen
         except mysql.connector.Error as e:
-            tk.messagebox.showerror("Error", f"No se pudo registrar el club: {e}")
+            print(f"Error al guardar el club: {e}")
 
 
     def obtener_id_genero(self, genero_nombre):
