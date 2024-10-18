@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox, filedialog
 from PIL import Image, ImageTk
 import mysql.connector
 
+
 class ClubesABM:
     def __init__(self, menu_root):
         entry_width = 25
@@ -34,10 +35,11 @@ class ClubesABM:
         self.entry_nombre = tk.Entry(self.frame, width=entry_width)  # Usar ancho consistente
         self.entry_nombre.grid(column=1, row=0, padx=15, pady=15)
 
+        # Cambiando self.sexo a self.genero
         self.label_genero = tk.Label(self.frame, text="Género:", bg="#d3d3d3", fg="black")
         self.label_genero.grid(row=2, column=0, padx=10, pady=5)
-        self.sexo_combo = ttk.Combobox(self.frame, values=["Masculino", "Femenino"], width=entry_width - 2, state='readonly')  # Ajustar ancho del Combobox
-        self.sexo_combo.grid(row=2, column=1, padx=15, pady=15)
+        self.genero_combo = ttk.Combobox(self.frame, values=self.obtener_generos(), width=entry_width - 2, state='readonly')  # Ajustar ancho del Combobox
+        self.genero_combo.grid(row=2, column=1, padx=15, pady=15)
 
         self.label_localidad = tk.Label(self.frame, text="Localidad:", bg="#d3d3d3", fg="black")
         self.label_localidad.grid(row=3, column=0, padx=10, pady=5)
@@ -61,7 +63,7 @@ class ClubesABM:
         self.button_guardar = tk.Button(self.root, text="Guardar", command=self.guardar_club, bg="#d3d3d3")
         self.button_guardar.place(relx=0.4, rely=0.8, anchor="center")  # Posicionarlo fuera del frame
 
-        self.button_volver = tk.Button(self.root, text="Volver", command=self.volver, bg="#d3d3d3")
+        self.button_volver = tk.Button(self.root, text="Volver", command=self.volver_menu, bg="#d3d3d3")
         self.button_volver.place(relx=0.6, rely=0.8, anchor="center")  # Posicionarlo fuera del frame
 
     def seleccionar_foto(self):
@@ -95,9 +97,24 @@ class ClubesABM:
             messagebox.showerror("Error", f"No se pudieron recuperar las localidades: {e}")
             return []
 
+    def obtener_generos(self):
+        try:
+            self.cursor.execute("SELECT descripcion FROM generos")  # Cambia "nombre" por el nombre de la columna que deseas
+            generos = [row[0] for row in self.cursor.fetchall()]
+            return generos
+        except mysql.connector.Error as e:
+            messagebox.showerror("Error", f"No se pudieron recuperar los géneros: {e}")
+            return []
+
     def guardar_club(self):
         nombre = self.entry_nombre.get()
         foto = self.entry_foto.get()
+        genero = self.genero_combo.get()
+        localidad = self.localidad_combo.get()
+
+        genero_id = self.obtener_id_genero(genero)
+        localidad_id = self.obtener_id_localidad(localidad)
+
         
         # Verificar que los campos no estén vacíos
         if not nombre:
@@ -106,7 +123,7 @@ class ClubesABM:
         
         try:
             with self.conn:
-                self.cursor.execute("INSERT INTO clubes (nombre, foto) VALUES (%s, %s)", (nombre, foto))
+                self.cursor.execute("INSERT INTO clubes (nombre,genero_id, localidad_id, logo) VALUES (%s, %s, %s, %s)", (nombre,genero,localidad, foto))
                 tk.messagebox.showinfo("Éxito", "Club registrado exitosamente.")
                 self.entry_nombre.delete(0, tk.END)  # Limpiar campo de nombre
                 self.entry_foto.config(state="normal")
@@ -116,16 +133,25 @@ class ClubesABM:
         except mysql.connector.Error as e:
             tk.messagebox.showerror("Error", f"No se pudo registrar el club: {e}")
 
-    def volver(self):
-        self.root.destroy()  # Cerrar la ventana actual
-        self.menu_root.deiconify()  # Volver a mostrar la ventana del menú
+
+    def obtener_id_genero(self, genero_nombre):
+        self.cursor.execute("SELECT id FROM generos WHERE descripcion = %s", (genero_nombre,))
+        result = self.cursor.fetchone()
+        return result[0] if result else None
+
+    def obtener_id_localidad(self, localidad_nombre):
+        self.cursor.execute("SELECT id FROM localidades WHERE nombre = %s", (localidad_nombre,))
+        result = self.cursor.fetchone()
+        return result[0] if result else None
+
+    def volver_menu(self):
+        self.root.destroy()
+        import Menu
 
     def run(self):
         self.root.mainloop()
 
 # Código para lanzar la aplicación
 if __name__ == "__main__":
-    root_menu = tk.Tk()
-    root_menu.withdraw()  # Ocultar ventana del menú al iniciar
-    app = ClubesABM(root_menu)
+    app = ClubesABM(None)  # Puedes pasar None si no necesitas usar el menú
     app.run()

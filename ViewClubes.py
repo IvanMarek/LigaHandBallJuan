@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox, simpledialog
 from tkinter import ttk
 import mysql.connector
+from registrarclub import ClubesABM  # Asegúrate de que este archivo esté en el mismo directorio
 
 # Función para obtener los clubes desde la base de datos
 def obtener_clubes(filtro_genero=None):
@@ -9,7 +10,7 @@ def obtener_clubes(filtro_genero=None):
         conn = mysql.connector.connect(
             host="localhost",
             user="root",
-            password="",
+            password="Ivan08012000@",
             port="3305",
             database="LigaHandball"
         )
@@ -47,7 +48,7 @@ def modificar_club():
                 conn = mysql.connector.connect(
                     host="localhost",
                     user="root",
-                    password="",
+                    password="Ivan08012000@",
                     port="3305",
                     database="LigaHandball"
                 )
@@ -66,9 +67,9 @@ def volver_menu():
     import Menu  # Asegúrate de que Menu.py está en el mismo directorio
 
 # Función para abrir el registro de nuevos clubes
-def nuevo_club():
-    root.destroy()
-    import RegistrarClubes  # Asegúrate de que registroclubes.py está en el mismo directorio
+def nuevo_club(menu_root):
+    app = ClubesABM(menu_root)
+    app.run()  # Asegúrate de que el método run() esté definido en ClubesABM
 
 # Función para actualizar el Treeview con los clubes
 def actualizar_treeview():
@@ -128,7 +129,7 @@ button_frame.pack(pady=(20, 20))
 button_volver = tk.Button(button_frame, text="Volver", font=("Calibri", 24), bg="#d3d3d3", command=volver_menu)
 button_volver.pack(side=tk.LEFT, padx=(0, 20))
 
-button_nuevo = tk.Button(button_frame, text="Nuevo", font=("Calibri", 24), bg="#d3d3d3", command=nuevo_club)
+button_nuevo = tk.Button(button_frame, text="Nuevo", font=("Calibri", 24), bg="#d3d3d3", command=lambda: nuevo_club(root))
 button_nuevo.pack(side=tk.LEFT, padx=(0, 20))
 
 button_modificar = tk.Button(button_frame, text="Modificar", font=("Calibri", 24), bg="#d3d3d3", command=modificar_club)
@@ -136,3 +137,4 @@ button_modificar.pack(side=tk.LEFT)
 
 # Ejecutar la aplicación
 root.mainloop()
+

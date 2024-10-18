@@ -5,8 +5,9 @@ import subprocess
 
 def abrir_registrar_club():
     root.withdraw()  # Oculta la ventana principal en lugar de destruirla
-    subprocess.call(["python", "Registrarclub.py"])  # Cambia 'Registrarclub.py' al nombre correcto del archivo si es necesario
+    subprocess.call(["python", "registrarclub.py"])  # Cambia 'Registrarclub.py' al nombre correcto del archivo si es necesario
     root.deiconify()  # Muestra la ventana principal nuevamente al cerrar la de registro
+
 
 def abrir_ver_clubes():
     root.withdraw()

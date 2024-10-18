@@ -9,7 +9,7 @@ def obtener_clubes():
         conexion = mysql.connector.connect(
             host="localhost",
             user="root",
-            password="",
+            password="Ivan08012000@",
             port="3305",
             database="LigaHandball"
         )
