@@ -26,11 +26,11 @@ def abrir_ver_jugadores():
 root = tk.Tk()
 root.title("Menú Principal")
 root.geometry("1366x768")
-root.configure(bg="#ff7700")
+root.configure(bg="#FF914D")
 root.resizable(False, False)
 
 try:
-    original_image = Image.open(r"C:\Users\Usuario\Downloads\visual code\matematica\Liga de Handball Punilla\liga-punilla.png")
+    original_image = Image.open(r"D:\Estudios-FormacionPersonal\ISAUI\juan\LigaHandBallJuan\liga-handball.png")
     resized_image = original_image.resize((250, 250))
     logo_image = ImageTk.PhotoImage(resized_image)
 

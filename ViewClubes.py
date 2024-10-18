@@ -10,6 +10,7 @@ def obtener_clubes(filtro_genero=None):
             host="localhost",
             user="root",
             password="",
+            port="3305",
             database="LigaHandball"
         )
         cursor = conn.cursor()
@@ -47,6 +48,7 @@ def modificar_club():
                     host="localhost",
                     user="root",
                     password="",
+                    port="3305",
                     database="LigaHandball"
                 )
                 cursor = conn.cursor()

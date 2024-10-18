@@ -5,7 +5,8 @@ import mysql.connector
 mydb = mysql.connector.connect(
     host="localhost",
     user="root", 
-    password="", 
+    password="",
+    port="3305", 
     database="liga_handball"
 )
 

@@ -3,7 +3,7 @@ from tkinter import ttk, messagebox, filedialog
 from PIL import Image, ImageTk
 import re
 
-directorio_imagenes = r"C:\Users\Usuario\Downloads\visual code\matematica\Liga de Handball Punilla"
+directorio_imagenes = r"D:\Estudios-FormacionPersonal\ISAUI\juan\LigaHandBallJuan\liga-handball.png"
 
 def cargar_imagen(label):
     archivo = filedialog.askopenfilename(initialdir=directorio_imagenes, filetypes=[("Imágenes", "*.png;*.jpg;*.jpeg")])

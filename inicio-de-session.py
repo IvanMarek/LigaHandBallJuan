@@ -36,7 +36,7 @@ root.geometry("800x600")
 root.config(bg="#FF914D")
 
 
-logo_path = r"C:\Users\Usuario\Downloads\visual code\matematica\Liga de Handball Punilla\liga-punilla.png"
+logo_path = r"D:\Estudios-FormacionPersonal\ISAUI\juan\LigaHandBallJuan\liga-punilla.png"
 try:
     image = Image.open(logo_path)  
     image = image.resize((300, 300), Image.LANCZOS)  

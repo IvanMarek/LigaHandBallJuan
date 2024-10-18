@@ -10,6 +10,7 @@ def obtener_clubes():
             host="localhost",
             user="root",
             password="",
+            port="3305",
             database="LigaHandball"
         )
         cursor = conexion.cursor()
@@ -61,8 +62,9 @@ def guardar_fixture():
     try:
         conexion = mysql.connector.connect(
             host="localhost",
-            user="tu_usuario",
-            password="tu_contraseña",
+            user="root",
+            password="",
+            port="3305",
             database="LigaHandball"
         )
         cursor = conexion.cursor()
