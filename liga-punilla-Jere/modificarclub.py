@@ -1,16 +1,56 @@
 import tkinter as tk
-from tkinter import messagebox, simpledialog
-from tkinter import ttk
+from tkinter import messagebox, ttk
 import mysql.connector
+class ViewClubes:
+    def __init__(self, root):
+        self.root = root
+        self.arbol = ttk.Treeview(root)  # Aquí creamos el árbol
+        self.arbol.pack()
+        self.cargar_datos()  # Cargar datos inicialmente
+
+    def cargar_datos(self):
+        # Limpia el Treeview
+        for i in self.arbol.get_children():
+            self.arbol.delete(i)
+        
+        # Cargar los datos de la base de datos
+        try:
+            conn = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="Ivan08012000@",
+                port="3305",
+                database="LigaHandball"
+            )
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM Clubes")  # Cambia esto según tu consulta
+            clubs = cursor.fetchall()
+            for club in clubs:
+                self.arbol.insert("", "end", values=club)
+        except mysql.connector.Error as e:
+            messagebox.showerror("Error", f"No se pudo cargar los clubes: {e}")
+        finally:
+            conn.close()
+
+    def modificar_club(self):
+        selected_club_index = self.arbol.selection()
+        if selected_club_index:
+            club_actual = self.arbol.item(selected_club_index[0])['values']
+            app = ClubesABM(menu_root=self.root, club_actual=club_actual, arbol=self.arbol, actualizar=self.cargar_datos)  # Pasar método de actualización
+            app.abrir()
+        else:
+            messagebox.showwarning("Advertencia", "Seleccione un club para modificar.")
+
 
 class ClubesABM:
-    def __init__(self, menu_root, club_actual=None, abrir_viewclubes=None):
+    def __init__(self, menu_root, club_actual=None, arbol=None, actualizar=None):
         self.menu_root = menu_root
         self.club_actual = club_actual
-        self.abrir_viewclubes = abrir_viewclubes  # Nueva referencia a la función de ViewClubes
+        self.arbol = arbol  # Almacena la referencia al árbol
+        self.actualizar = actualizar  # Almacena la referencia al método de actualización
 
         # Configuración de la ventana
-        self.root = tk.Tk()
+        self.root = tk.Toplevel(menu_root)  # Crea una ventana secundaria
         self.root.title("Modificar Club")
         self.root.geometry("1366x765")
         self.root.resizable(False, False)
@@ -43,119 +83,65 @@ class ClubesABM:
         self.combo_genero = ttk.Combobox(self.frame, values=self.obtener_generos(), width=23)
         self.combo_genero.grid(row=2, column=1, padx=10, pady=10)
 
-        # Si se pasó un club a modificar, completar los campos con los valores actuales
+        # Rellenar campos si `club_actual` está definido
         if self.club_actual:
-            self.entry_nombre.insert(0, self.club_actual[0])
-            self.combo_localidad.set(self.club_actual[1])
-            self.combo_genero.set(self.club_actual[2])
+            self.entry_nombre.insert(0, self.club_actual[1])  # Asumiendo que el nombre está en el índice 1
+            self.combo_localidad.set(self.club_actual[2])  # Asumiendo que la localidad está en el índice 2
+            self.combo_genero.set(self.club_actual[3])  # Asumiendo que el género está en el índice 3
 
-        # Botón para modificar club
-        self.button_modificar = tk.Button(self.root, text="Guardar cambios", command=self.modificar_club, bg="#d3d3d3")
-        self.button_modificar.pack(pady=(10, 10))  # Botón de guardar
+        # Botón para guardar cambios
+        self.button_modificar = tk.Button(self.frame, text="Guardar cambios", command=self.modificar_club, bg="#d3d3d3")
+        self.button_modificar.grid(row=4, column=1, pady=(10, 10))
 
-        # Botón "Volver"
-        self.button_volver = tk.Button(self.root, text="Volver", command=self.volver_a_viewclubes, bg="#d3d3d3")
-        self.button_volver.pack(pady=(10, 10))  # Botón de volver
-
-        # Iniciar el bucle de la ventana
+    def abrir(self):
         self.root.mainloop()
 
     def modificar_club(self):
-        # Llamar al método para guardar la modificación
-        self.guardar_modificacion(
-            self.entry_nombre.get().strip(),
-            self.combo_localidad.get().strip(),
-            self.combo_genero.get().strip()
-        )
-
-    def guardar_modificacion(self, nuevo_nombre, nueva_localidad, nuevo_genero):
-        # Aquí implementa la lógica para guardar los cambios en la base de datos
-        if nuevo_nombre and nueva_localidad and nuevo_genero:
-            try:
-                conn = mysql.connector.connect(
-                    host="localhost",
-                    user="root",
-                    password="",
-                    port="3306",
-                    database="LigaHandball"
-                )
-                cursor = conn.cursor()
-
-                # Verificar si la nueva localidad existe en la base de datos
-                cursor.execute("SELECT id FROM Localidades WHERE nombre = %s", (nueva_localidad,))
-                localidad_id = cursor.fetchone()
-
-                # Verificar si el nuevo género es válido
-                cursor.execute("SELECT id FROM Generos WHERE descripcion = %s", (nuevo_genero,))
-                genero_id = cursor.fetchone()
-
-                if localidad_id and genero_id:
-                    cursor.execute("""UPDATE Clubes SET nombre = %s, localidad_id = %s, genero_id = %s WHERE nombre = %s""",
-                                   (nuevo_nombre, localidad_id[0], genero_id[0], self.club_actual[0]))
-                    conn.commit()
-                    messagebox.showinfo("Éxito", "Los datos del club han sido modificados con éxito.")
-                    self.volver_a_viewclubes()  # Volver a la ventana de ViewClubes
-                else:
-                    messagebox.showerror("Error", "Datos inválidos. Verifique la localidad y el género.")
-
-            except mysql.connector.Error as e:
-                messagebox.showerror("Error", f"No se pudo modificar el club: {e}")
-            finally:
-                conn.close()
+        if self.club_actual:  # Asegura que hay un club seleccionado
+            self.guardar_modificacion(
+                self.club_actual[0],                    # ID del club actual
+                self.entry_nombre.get().strip(),        # Nombre
+                self.combo_localidad.get().strip(),     # Localidad
+                self.combo_genero.get().strip()         # Género
+            )
         else:
-            messagebox.showwarning("Advertencia", "Todos los campos deben ser completados.")
+            messagebox.showwarning("Advertencia", "No hay club seleccionado para modificar.")
 
-    def volver_a_viewclubes(self):
-        # Cerrar la ventana actual y volver a la ventana de ViewClubes
-        self.root.destroy()
-        if self.abrir_viewclubes:
-            self.abrir_viewclubes()  # Llamada a la función para abrir ViewClubes
+    def guardar_modificacion(self, id_club, nombre, localidad, genero):
+        try:
+            conn = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="Ivan08012000@",
+                port="3305",
+                database="LigaHandball"
+            )
+            cursor = conn.cursor()
+            query = """
+            UPDATE Clubes 
+            SET nombre = %s, 
+                localidad_id = (SELECT id FROM Localidades WHERE nombre = %s), 
+                genero_id = (SELECT id FROM Generos WHERE descripcion = %s) 
+            WHERE id = %s
+            """
+            cursor.execute(query, (nombre, localidad, genero, id_club))
+            conn.commit()
+            messagebox.showinfo("Éxito", "Club modificado con éxito.")
+
+            # Llama al método para actualizar el Treeview
+            if self.actualizar:
+                self.actualizar()  # Asegúrate de que esto esté llamando a `cargar_datos` correctamente
+
+            self.root.destroy()  # Cierra la ventana después de modificar
+        except mysql.connector.Error as e:
+            messagebox.showerror("Error", f"No se pudo modificar el club: {e}")
+        finally:
+            conn.close()
 
     def obtener_localidades(self):
-        # Función para obtener las localidades de la base de datos
-        try:
-            conn = mysql.connector.connect(
-                host="localhost",
-                user="root",
-                password="",
-                port="3306",
-                database="LigaHandball"
-            )
-            cursor = conn.cursor()
-            cursor.execute("SELECT nombre FROM Localidades")
-            localidades = [row[0] for row in cursor.fetchall()]
-            return localidades
-        except mysql.connector.Error as e:
-            messagebox.showerror("Error", f"No se pudo obtener las localidades: {e}")
-            return []
-        finally:
-            conn.close()
+        # Implementa esta función para obtener las localidades de la base de datos
+        return ["Localidad 1", "Localidad 2", "Localidad 3"]
 
     def obtener_generos(self):
-        # Función para obtener los géneros de la base de datos
-        try:
-            conn = mysql.connector.connect(
-                host="localhost",
-                user="root",
-                password="",
-                port="3306",
-                database="LigaHandball"
-            )
-            cursor = conn.cursor()
-            cursor.execute("SELECT descripcion FROM Generos")
-            generos = [row[0] for row in cursor.fetchall()]
-            return generos
-        except mysql.connector.Error as e:
-            messagebox.showerror("Error", f"No se pudo obtener los géneros: {e}")
-            return []
-        finally:
-            conn.close()
-
-# Ejemplo de cómo iniciar la ventana
-if __name__ == "__main__":
-    def abrir_viewclubes():
-        # Aquí deberías implementar la lógica para abrir la ventana ViewClubes
-        print("Volviendo a ViewClubes...")  # Temporariamente, muestra un mensaje en consola
-
-    menu_root = None  # Cambia esto por la referencia real a tu menú principal
-    app = ClubesABM(menu_root, abrir_viewclubes=abrir_viewclubes)
+        # Implementa esta función para obtener los géneros de la base de datos
+        return ["Masculino", "Femenino"]

@@ -23,8 +23,8 @@ class AutoridadesABM:
         self.conn = mysql.connector.connect(
             host="localhost",
             user="root",
-            password="",
-            port="3306",
+        password="Ivan08012000@", #PONER SU PROPIA CLAVE
+        port = 3305,
             database="LigaHandball"
         )
         self.cursor = self.conn.cursor()

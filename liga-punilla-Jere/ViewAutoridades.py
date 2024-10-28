@@ -7,7 +7,8 @@ def obtener_autoridades(filtro_puesto=None):
         conn = mysql.connector.connect(
             host="localhost",
             user="root",
-            password="",  # Asegúrate de tener la contraseña correcta
+        password="Ivan08012000@", #PONER SU PROPIA CLAVE
+        port = 3305, # Asegúrate de tener la contraseña correcta
             database="LigaHandball"
         )
         cursor = conn.cursor()
@@ -39,7 +40,8 @@ def obtener_puestos():
         conn = mysql.connector.connect(
             host="localhost",
             user="root",
-            password="",  # Asegúrate de tener la contraseña correcta
+        password="Ivan08012000@", #PONER SU PROPIA CLAVE
+        port = 3305, # Asegúrate de tener la contraseña correcta
             database="LigaHandball"
         )
         cursor = conn.cursor()
@@ -64,7 +66,8 @@ def modificar_autoridad():
                 conn = mysql.connector.connect(
                     host="localhost",
                     user="root",
-                    password="",  # Asegúrate de tener la contraseña correcta
+        password="Ivan08012000@", #PONER SU PROPIA CLAVE
+        port = 3305, # Asegúrate de tener la contraseña correcta
                     database="LigaHandball"
                 )
                 cursor = conn.cursor()
