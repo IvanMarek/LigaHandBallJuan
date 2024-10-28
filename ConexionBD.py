@@ -1,13 +1,13 @@
-
+import tkinter as tk
+from tkinter import messagebox
 import mysql.connector
 
-# Configuración de la conexión a la base de datos
 mydb = mysql.connector.connect(
-    host="localhost",
-    user="root", 
-    password="Ivan08012000@",
-    port="3305", 
-    database="liga_handball"
-)
+        host="localhost",
+        user="root", #PONER SU PROPIO USUARIO
+        password="Ivan08012000@", #PONER SU PROPIA CLAVE
+        port = 3305,
+        database="LigaHandball")
+mycursor = mydb.cursor()
 
-mycursor = mydb.cursor()  # type: ignore
+
