@@ -58,17 +58,15 @@ def generar_partidos_por_grupo(clubes, jornada, grupo):
 # Función para obtener clubes por grupo (A o B)
 def obtener_clubes(grupo):
     try:
-        conexion = mysql.connector.connect(
+        with mysql.connector.connect(
             host="localhost",
             user="root",
-            password="Ivan08012000@", #PONER SU PROPIA CLAVE
-            port = 3305,
+            password="",
             database="LigaHandball"
-        )
-        cursor = conexion.cursor()
-        cursor.execute("SELECT nombre FROM Clubes WHERE grupo = %s", (grupo,))
-        clubes = [fila[0] for fila in cursor.fetchall()]
-        conexion.close()
+        ) as conexion:
+            cursor = conexion.cursor()
+            cursor.execute("SELECT nombre FROM Clubes WHERE grupo = %s", (grupo,))
+            clubes = [fila[0] for fila in cursor.fetchall()]
         return clubes
     except mysql.connector.Error as err:
         messagebox.showerror("Error", f"No se pudieron obtener los clubes: {err}")
@@ -86,23 +84,21 @@ def actualizar_fixture():
 # Función para guardar el fixture en la base de datos
 def guardar_fixture():
     try:
-        conexion = mysql.connector.connect(
+        with mysql.connector.connect(
             host="localhost",
             user="root",
-            password="Ivan08012000@", #PONER SU PROPIA CLAVE
-            port = 3305,
+            password="",
             database="LigaHandball"
-        )
-        cursor = conexion.cursor()
-        cursor.execute("DELETE FROM Encuentros")  # Limpiar tabla antes de guardar
-        for partido in fixture:
-            if partido[0]:
-                cursor.execute(
-                    "INSERT INTO Encuentros (grupo, jornada, club1, club2, resultado) VALUES (%s, %s, %s, %s, %s)",
-                    (partido[1], partido[0], partido[2], partido[3], partido[4])  # Cambiar el orden aquí
-                )
-        conexion.commit()
-        conexion.close()
+        ) as conexion:
+            cursor = conexion.cursor()
+            cursor.execute("DELETE FROM Encuentros")  # Limpiar tabla antes de guardar
+            for partido in fixture:
+                if partido[0]:  # Solo guardar si la jornada es válida
+                    cursor.execute(
+                        "INSERT INTO Encuentros (jornada, grupo, club1, club2, resultado) VALUES (%s, %s, %s, %s, %s)",
+                        (partido[0], partido[1], partido[2], partido[3], partido[4])  # Orden correcto de inserción
+                    )
+            conexion.commit()
         messagebox.showinfo("Éxito", "El fixture ha sido guardado.")
     except mysql.connector.Error as err:
         messagebox.showerror("Error", f"Error al guardar el fixture: {err}")
@@ -110,17 +106,15 @@ def guardar_fixture():
 # Función para cargar el fixture desde la base de datos
 def cargar_fixture():
     try:
-        conexion = mysql.connector.connect(
+        with mysql.connector.connect(
             host="localhost",
             user="root",
-            password="Ivan08012000@", #PONER SU PROPIA CLAVE
-            port = 3305,
+            password="",
             database="LigaHandball"
-        )
-        cursor = conexion.cursor()
-        cursor.execute("SELECT jornada, grupo, club1, club2, resultado FROM Encuentros")
-        resultados = cursor.fetchall()
-        conexion.close()
+        ) as conexion:
+            cursor = conexion.cursor()
+            cursor.execute("SELECT jornada, grupo, club1, club2, resultado FROM Encuentros")
+            resultados = cursor.fetchall()
         
         # Limpiar el fixture actual
         global fixture
@@ -145,7 +139,6 @@ def editar_resultado(event):
 
 # Función para volver al menú
 def volver_menu():
-    root.destroy()
     import Menu
 
 # Crear la ventana principal
@@ -202,8 +195,6 @@ button_volver = tk.Button(root, text="Volver", font=("Calibri", 24), command=vol
 button_volver.pack(pady=(10, 20))
 
 fixture = []
-
-# Llamar a la función para cargar el fixture al iniciar
 cargar_fixture()
 
 root.mainloop()
