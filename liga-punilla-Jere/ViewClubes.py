@@ -9,8 +9,8 @@ def obtener_clubes(filtro_genero=None, filtro_nombre=None):
         conn = mysql.connector.connect(
             host="localhost",
             user="root",
-            password="Ivan08012000@",
-            port="3305",
+            password="",
+            port="3306",
             database="ligaHandball"
         )
         cursor = conn.cursor()
@@ -82,8 +82,8 @@ def eliminar_club():
                 conn = mysql.connector.connect(
                     host="localhost",
                     user="root",
-                    password="Ivan08012000@",
-                    port="3305",
+                    password="",
+                    port="3306",
                     database="LigaHandball"
                 )
                 cursor = conn.cursor()
@@ -101,6 +101,7 @@ def eliminar_club():
 def volver_menu():
     root.destroy()
     import Menu
+    Menu.root = tk.Tk()
     Menu.root.mainloop()
 
 def nuevo_club():
@@ -158,7 +159,7 @@ arbol.pack(pady=(10, 20), expand=True, fill='both')
 frame_filtro = tk.Frame(root, bg="#ff7700")
 frame_filtro.pack(pady=(10, 0))
 
-tk.Label(frame_filtro, text="Filtrar por género:", font=("Calibri", 18), bg="#ff7700").pack(side=tk.LEFT, padx=10)
+tk.Label(frame_filtro, text="Filtrar por Categoria:", font=("Calibri", 18), bg="#ff7700").pack(side=tk.LEFT, padx=10)
 combobox_genero = ttk.Combobox(frame_filtro, values=["Todos", "Masculino", "Femenino"], state="readonly", font=("Calibri", 18))
 combobox_genero.current(0)
 combobox_genero.pack(side=tk.LEFT)
