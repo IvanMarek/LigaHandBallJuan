@@ -52,8 +52,8 @@ class LISTADO(Frame):
         btn_volver = Button(self, text="Volver", borderwidth=2, bg="grey", font=('Calibri', 15), command=self.volver_menu)
         btn_volver.grid(row=3, column=0, padx=10, pady=10)
 
-        btn_modificar = Button(self, text="Modificar", borderwidth=2, bg="grey", font=('Calibri', 15), command=self.modificar_jugador)
-        btn_modificar.grid(row=4, column=0, padx=10, pady=10)
+        #btn_modificar = Button(self, text="Modificar", borderwidth=2, bg="grey", font=('Calibri', 15), command=self.modificar_jugador)
+        #btn_modificar.grid(row=4, column=0, padx=10, pady=10)
 
         stilo = ttk.Style()
         stilo.configure("Treeview", font=("Robot", 10), rowheight=25)
@@ -84,7 +84,7 @@ class LISTADO(Frame):
 
     def volver_menu(self):
         self.master.destroy()  # Cierra la ventana actual
-        import Menu  # Importa tu módulo de menú principal (sin .py)
+
 
     def modificar_jugador(self):
         # Aquí deberías implementar la lógica para modificar un jugador
