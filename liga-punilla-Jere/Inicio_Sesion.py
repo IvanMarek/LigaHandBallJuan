@@ -8,8 +8,7 @@ def verificar_usuario(username, password):
         conexion = mysql.connector.connect(
             host="localhost",
             user="root",
-            password="Ivan08012000@", #PONER SU PROPIA CLAVE
-            port = 3305,
+            password="",
             database="LigaHandball"
         )
         cursor = conexion.cursor()
