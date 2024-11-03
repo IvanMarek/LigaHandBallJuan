@@ -1,151 +1,98 @@
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
-from PIL import Image, ImageTk
-import re
+from tkinter import *
+from tkinter import ttk
+import mysql.connector
+from ConexionBD import *
+from tkinter import messagebox, simpledialog
 
-directorio_imagenes = r"D:\Estudios-FormacionPersonal\ISAUI\juan\LigaHandBallJuan\liga-handball.png"
+class LISTADO(Frame):
+    def __init__(self, master=None, menu=None):
+        super().__init__(master, bg="#ff7700", width=1366, height=768)
+        self.master = master
+        self.menu_principal = menu
+        self.pack_propagate(False)
+        self.pack(expand=True)
 
-def cargar_imagen(label):
-    archivo = filedialog.askopenfilename(initialdir=directorio_imagenes, filetypes=[("Imágenes", "*.png;*.jpg;*.jpeg")])
-    if archivo:
-        img = Image.open(archivo)
-        img.thumbnail((120, 120), Image.LANCZOS)  
-        img = ImageTk.PhotoImage(img)
-        label.config(image=img)
-        label.image = img
+        # Obtener todos los jugadores
+        self.jugadores = []
+        self.actualizar_jugadores()
 
-def validar_campos():
-    nombre = entry_nombre.get()
-    apellido = entry_apellido.get()
-    dni = entry_dni.get()
-    domicilio = entry_domicilio.get()
-    telefono = entry_telefono.get()
-    email = entry_email.get()
+        self.variable = IntVar(value=0)  
+        self.interfaz()
 
-    if not re.match("^[A-Za-z]+$", nombre):
-        messagebox.showerror("Error", "Por favor, escriba su nombre como está en el DNI")
-        return False
-    if not re.match("^[A-Za-z]+$", apellido):
-        messagebox.showerror("Error", "Por favor, escriba su apellido como está en el DNI")
-        return False
-    if not re.match("^[0-9]+$", dni):
-        messagebox.showerror("Error", "Por favor, solo números en el DNI")
-        return False
-    if not re.match("^[A-Za-z0-9 ]+$", domicilio):
-        messagebox.showerror("Error", "Por favor, escriba su domicilio como está en el DNI")
-        return False
-    if not re.match("^[0-9]+$", telefono):
-        messagebox.showerror("Error", "Por favor, escriba su teléfono como está en el DNI")
-        return False
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        messagebox.showerror("Error", "Por favor, ingrese un correo electrónico válido")
-        return False
+    def actualizar_jugadores(self):
+        mycursor.execute("SELECT j.id, j.nombre, j.apellido, j.dni, j.correo_electronico, j.fecha_nacimiento, g.descripcion AS genero, l.nombre AS localidad, c.nombre AS club FROM Jugadores j JOIN Generos g ON j.genero_id = g.id JOIN Localidades l ON j.localidad_id = l.id LEFT JOIN Clubes c ON j.club_id = c.id")
+        self.jugadores = mycursor.fetchall()
 
-    return True
+    def actualizar_treeview(self):
+        arbol = self.arbol
+        for item in arbol.get_children():
+            arbol.delete(item)
 
-def confirmar_guardar():
-    if validar_campos():
-        respuesta = messagebox.askyesno("Confirmación", "¿Está seguro que desea guardar?")
-        if respuesta:
-            # Aquí puedes agregar la lógica para guardar los datos en la base de datos
-            messagebox.showinfo("Éxito", "Los datos se guardaron exitosamente ✅")
-            borrar_datos()
+        for jugador in self.jugadores:
+            arbol.insert("", "end", values=(jugador[1], jugador[2], jugador[3], jugador[4], jugador[5], jugador[6], jugador[7], jugador[8]))
 
-def borrar_datos():
-    entry_nombre.delete(0, tk.END)
-    entry_apellido.delete(0, tk.END)
-    entry_dni.delete(0, tk.END)
-    entry_domicilio.delete(0, tk.END)
-    entry_telefono.delete(0, tk.END)
-    entry_email.delete(0, tk.END)
-    sexo_combo.set('')
-    localidad_combo.set('')
-    club_combo.set('')
-    ficha_medica_img_label.config(image='')
-    carnet_img_label.config(image='')
+    def interfaz(self):
+        # Frame principal
+        frame = LabelFrame(self, text="Listado de Jugadores", bg="#ff7700", font=('Calibri', 20), borderwidth=5)
+        frame.grid(row=0, column=0, padx=5, pady=50)
 
-root = tk.Tk()
-root.title("Alta/Modificación de Jugadores")
-root.geometry("1366x765")
-root.configure(bg="#ff7f00")
-root.resizable(False, False)
+        self.master.rowconfigure(0, weight=1)
+        self.master.columnconfigure(0, weight=1)
 
-frame = tk.Frame(root, bg="#ff7f00")
-frame.pack(padx=20, pady=10, fill=tk.BOTH, expand=True)
+        # Etiqueta "Jugadores Registrados"
+        lbl_jugadores_registrados = Label(self, text="Jugadores Registrados", bg="#ff7700", font=('Calibri', 25))
+        lbl_jugadores_registrados.grid(row=1, column=0, padx=10, pady=10)
 
-tk.Label(frame, text="Nombre (Obligatorio)", bg="#ff7f00", fg="black").grid(row=1, column=0, sticky="e", padx=10, pady=5)
-entry_nombre = tk.Entry(frame, width=30)
-entry_nombre.grid(row=1, column=1, pady=5)
+        # Treeview
+        self.arbol = ttk.Treeview(self, columns=("nombre", "apellido", "dni", "correo", "fecha_nacimiento", "genero", "localidad", "club"), show="headings")
+        self.arbol.grid(row=2, column=0, sticky="nsew", padx=10, pady=10)
 
-def solo_letras(event):
-    if not event.char.isalpha() and event.keysym != 'BackSpace':
-        return "break"
+        # Botones debajo de la grilla
+        btn_volver = Button(self, text="Volver", borderwidth=2, bg="grey", font=('Calibri', 15), command=self.volver_menu)
+        btn_volver.grid(row=3, column=0, padx=10, pady=10)
 
-entry_nombre.bind("<KeyPress>", solo_letras)
+        #btn_modificar = Button(self, text="Modificar", borderwidth=2, bg="grey", font=('Calibri', 15), command=self.modificar_jugador)
+        #btn_modificar.grid(row=4, column=0, padx=10, pady=10)
 
-tk.Label(frame, text="Apellido (Obligatorio)", bg="#ff7f00", fg="black").grid(row=2, column=0, sticky="e", padx=10, pady=5)
-entry_apellido = tk.Entry(frame, width=30)
-entry_apellido.grid(row=2, column=1, pady=5)
-entry_apellido.bind("<KeyPress>", solo_letras)
+        stilo = ttk.Style()
+        stilo.configure("Treeview", font=("Robot", 10), rowheight=25)
+        stilo.configure("Treeview.Heading", font=("Robot", 13))
 
-tk.Label(frame, text="D.N.I (Obligatorio)", bg="#ff7f00", fg="black").grid(row=3, column=0, sticky="e", padx=10, pady=5)
-entry_dni = tk.Entry(frame, width=30)
-entry_dni.grid(row=3, column=1, pady=5)
+        # Definir encabezados
+        self.arbol.heading("nombre", text="Nombre")
+        self.arbol.heading("apellido", text="Apellido")
+        self.arbol.heading("dni", text="DNI")
+        self.arbol.heading("correo", text="Correo")
+        self.arbol.heading("fecha_nacimiento", text="Fecha de Nacimiento")
+        self.arbol.heading("genero", text="Género")
+        self.arbol.heading("localidad", text="Localidad")
+        self.arbol.heading("club", text="Club")
 
-def solo_numeros(event):
-    if not event.char.isdigit() and event.keysym != 'BackSpace':
-        return "break"
+        # Ancho de las columnas y datos centrados
+        self.arbol.column("nombre", anchor='center', width=100)
+        self.arbol.column("apellido", anchor='center', width=100)
+        self.arbol.column("dni", anchor='center', width=100)
+        self.arbol.column("correo", anchor='center', width=150)
+        self.arbol.column("fecha_nacimiento", anchor='center', width=150)
+        self.arbol.column("genero", anchor='center', width=100)
+        self.arbol.column("localidad", anchor='center', width=100)
+        self.arbol.column("club", anchor='center', width=100)
 
-entry_dni.bind("<KeyPress>", solo_numeros)
+        # Carga los datos iniciales
+        self.actualizar_treeview()
 
-tk.Label(frame, text="Domicilio", bg="#ff7f00", fg="white").grid(row=4, column=0, sticky="e", padx=10, pady=5)
-entry_domicilio = tk.Entry(frame, width=30)
-entry_domicilio.grid(row=4, column=1, pady=5)
+    def volver_menu(self):
+        self.master.destroy()  # Cierra la ventana actual
 
-tk.Label(frame, text="Teléfono", bg="#ff7f00", fg="white").grid(row=5, column=0, sticky="e", padx=10, pady=5)
-entry_telefono = tk.Entry(frame, width=30)
-entry_telefono.grid(row=5, column=1, pady=5)
-entry_telefono.bind("<KeyPress>", solo_numeros)
 
-tk.Label(frame, text="Email", bg="#ff7f00", fg="white").grid(row=6, column=0, sticky="e", padx=10, pady=5)
-entry_email = tk.Entry(frame, width=30)
-entry_email.grid(row=6, column=1, pady=5)
+    def modificar_jugador(self):
+        # Aquí deberías implementar la lógica para modificar un jugador
+        print("Modificar jugador")  # Placeholder para la función
 
-tk.Label(frame, text="Género", bg="#ff7f00", fg="white").grid(row=7, column=0, sticky="e", padx=10, pady=5)
-sexo_combo = ttk.Combobox(frame, values=["Masculino", "Femenino"], width=28, state='readonly')
-sexo_combo.grid(row=7, column=1, pady=5)
-
-tk.Label(frame, text="Localidad", bg="#ff7f00", fg="white").grid(row=8, column=0, sticky="e", padx=10, pady=5)
-localidad_combo = ttk.Combobox(frame, values=["Localidad 1", "Localidad 2", "Localidad 3"], width=28, state='readonly')
-localidad_combo.grid(row=8, column=1, pady=5)
-
-tk.Label(frame, text="Club", bg="#ff7f00", fg="white").grid(row=9, column=0, sticky="e", padx=10, pady=5)
-club_combo = ttk.Combobox(frame, values=["Club A", "Club B", "Club C"], width=28, state='readonly')
-club_combo.grid(row=9, column=1, pady=5)
-
-ficha_medica_label = tk.Label(frame, text="Ficha Médica", bg="#ff7f00", fg="white")
-ficha_medica_label.grid(row=1, column=3, padx=10, pady=5)
-
-ficha_medica_img_label = tk.Label(frame, bg="#ff7f00", text="Sin Imagen")
-ficha_medica_img_label.grid(row=2, column=3, padx=10, pady=5)
-
-tk.Button(frame, text="Subir", command=lambda: cargar_imagen(ficha_medica_img_label), bg="grey").grid(row=3, column=3, padx=10, pady=5)
-
-carnet_label = tk.Label(frame, text="Carnet", bg="#ff7f00", fg="white")
-carnet_label.grid(row=4, column=3, padx=10, pady=5)
-
-carnet_img_label = tk.Label(frame, bg="#ff7f00", text="Sin Imagen")
-carnet_img_label.grid(row=5, column=3, padx=10, pady=5)
-
-tk.Button(frame, text="Subir", command=lambda: cargar_imagen(carnet_img_label), bg="grey").grid(row=6, column=3, padx=10, pady=5)
-
-cancelar_btn = tk.Button(frame, text="Cancelar", bg="red", fg="white", width=10, command=borrar_datos)
-cancelar_btn.grid(row=10, column=0, pady=20)
-
-guardar_btn = tk.Button(frame, text="Guardar", bg="green", fg="white", width=10, command=confirmar_guardar)
-guardar_btn.grid(row=10, column=1, pady=20)
-
-volver_menu_btn = tk.Button(frame, text="Volver", bg="lightblue", fg="black", width=10)
-volver_menu_btn.grid(row=10, column=2, pady=20)
-
-root.mainloop()
+# Ejemplo de uso
+if __name__ == "__main__":
+    ventana = Tk()
+    ventana.wm_title("Listado de Jugadores")
+    ventana.wm_resizable(False, False)
+    entrada = LISTADO(ventana)
+    entrada.mainloop()
