@@ -1,5 +1,5 @@
 -- Borrar la base de datos actual si existe
-DROP DATABASE IF EXISTS `LigaHandball`;
+DROP DATABASE IF EXISTS LigaHandball;
 
 -- Crear la base de datos
 CREATE DATABASE LigaHandball;
@@ -17,14 +17,14 @@ CREATE TABLE Generos (
     descripcion VARCHAR(50) NOT NULL UNIQUE
 );
 
--- Crear la tabla de Clubes con el atributo 'grupo'
+-- Crear la tabla de Clubes con el atributo 'grupo' y 'logo' como LONGBLOB
 CREATE TABLE Clubes (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nombre VARCHAR(100) NOT NULL,
     genero_id INT NOT NULL,
     localidad_id INT NOT NULL,
     grupo CHAR(1) NOT NULL, -- Grupo A o B
-    logo VARCHAR(255),  -- Almacena la ruta del archivo del logo
+    logo LONGBLOB, -- Imagen del logo en formato binario
     FOREIGN KEY (genero_id) REFERENCES Generos(id),
     FOREIGN KEY (localidad_id) REFERENCES Localidades(id),
     UNIQUE (nombre, genero_id, localidad_id)
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS Encuentros (
     grupo CHAR(1) NOT NULL,
     club1 VARCHAR(100) NOT NULL,
     club2 VARCHAR(100) NOT NULL,
-    resultado VARCHAR(10) NOT NULL
+    resultado VARCHAR(10) NOT NULL -- Almacena el resultado del encuentro
 );
 
 -- Insertar datos en la tabla Localidades
@@ -124,6 +124,7 @@ INSERT INTO Puestos (nombre) VALUES
 ('Vocal Titular'), 
 ('Revisor de Cuenta');
 
+-- Insertar autoridades
 INSERT INTO Autoridades (nombre, apellido, puesto_id) VALUES 
 ('Ana', 'Gómez', (SELECT id FROM Puestos WHERE nombre = 'Presidenta')),
 ('Carlos', 'Martínez', (SELECT id FROM Puestos WHERE nombre = 'Tesorero')),
